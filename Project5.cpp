@@ -2,9 +2,9 @@
  * Set ADT
  * Project5.c 
  *
- * My Name
- * My Section Time
- * Spring 2017
+ * Jost Luebbe
+ * Tues - Thurs 11-12:30
+ * Fall 2017
  *
  */
 
@@ -67,17 +67,56 @@ void assignSet(Set* self, const Set* other) {
 	createCopySet(self, other);
 }
 
+int compare_function(const void *a, const void *b) {
+	int *x = (int *) a;
+	int *y = (int *) b;
+	return *x - *y;
+}
+
 /* return true if x is an element of self */
 bool isMemberSet(const Set* self, int x) {
+/*	for(int i=0; i<self->len; i++){
+		if(self->elements[i]==x){
+			return true;
+		}
+	}
+	return false;*/
+
+	int mid = 0;
+	int start = 0;
+	int end = self->len-1;
+	while(start <= end){
+		mid = (start + end) / 2;
+		if(x == self->elements[mid]){
+			return true;
+		}
+		if(x < self->elements[mid]){
+			end = mid - 1;
+			continue;
+		}
+		else{
+			start = mid + 1;
+		}
+	}
+	return false;
 }
 
 /*
  * add x as a new member to this set. 
  * If x is already a member, then self should not be changed
- * Be sure to restore the design invariant property that elemnts[] remains sorted
+ * Be sure to restore the design invariant property that elements[] remains sorted
  * (yes, you can assume it is sorted when the function is called, that's what an invariant is all about)
  */
 void insertSet(Set* self, int x) {
+	if(isMemberSet(self, x)){
+		return;
+	}
+	else{
+		displaySet(self);
+		self->len += 1;
+		self->elements[self->len] = x;
+		qsort(self, sizeof(int), self->len, compare_function);
+	}
 }
 
 
@@ -102,7 +141,7 @@ void displaySet(const Set* self) {
 	printf("{");
 
 	if (self->len == 0) { 
-		printf("}"); 
+		printf("}\n");
 	}
 	else {
 		for (k = 0; k < self->len; k += 1) {
