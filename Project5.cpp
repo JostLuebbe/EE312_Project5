@@ -67,12 +67,6 @@ void assignSet(Set* self, const Set* other) {
 	createCopySet(self, other);
 }
 
-int compare_function(const void *a, const void *b) {
-	int *x = (int *) a;
-	int *y = (int *) b;
-	return *x - *y;
-}
-
 /* return true if x is an element of self */
 bool isMemberSet(const Set* self, int x) {
 /*	for(int i=0; i<self->len; i++){
@@ -81,7 +75,6 @@ bool isMemberSet(const Set* self, int x) {
 		}
 	}
 	return false;*/
-
 	int mid = 0;
 	int start = 0;
 	int end = self->len-1;
@@ -112,10 +105,31 @@ void insertSet(Set* self, int x) {
 		return;
 	}
 	else{
-		displaySet(self);
-		self->len += 1;
-		self->elements[self->len] = x;
-		qsort(self, sizeof(int), self->len, compare_function);
+        if(self->len==0){
+            createSingletonSet(self, x);
+        }
+        else{
+            //Set* new_set = (Set*)malloc(sizeof(Set));
+            int* new_elements = (int*)malloc(sizeof(int) * (self->len+1));
+            int i = self->len;
+            while(self->elements[i-1]>x){
+                new_elements[i] = self->elements[i-1];
+                i--;
+            }
+            new_elements[i] = x;
+            i--;
+            while(i>=0){
+                new_elements[i] = self->elements[i];
+                i--;
+            }
+            //int* temp = self->elements;
+            destroySet(self);
+            //displaySet(self
+            self->elements = new_elements;
+            self->len += 1;
+            //free(temp);
+            //destroySet(self);
+        }
 	}
 }
 
@@ -131,7 +145,25 @@ void insertSet(Set* self, int x) {
  * is almost definitely NOT worth the trouble
  */
 void removeSet(Set* self, int x) {
-
+    if(isMemberSet(self, x)){
+        int i = 0;
+        int y = 0;
+        while(i < self->len-1){
+            if(self->elements[i] == x){
+                self->elements[i] = self->elements[i+1];
+                i += 2;
+                y=1;
+            }
+            else{
+                self->elements[i] = self->elements[i+y];
+                i++;
+            }
+        }
+        self->len = self->len - 1;
+    }
+    else{
+        return;
+    }
 }
 
 /* done for you already */
@@ -156,10 +188,37 @@ void displaySet(const Set* self) {
 
 /* return true if self and other have exactly the same elements */
 bool isEqualToSet(const Set* self, const Set* other) {
+    if(self->len != other->len){
+        return false;
+    }
+    int i = 0;
+    while(i<self->len){
+        if(self->elements[i] != other->elements[i]){
+            return false;
+        }
+        i++;
+    }
+    return true;
 }
 
 /* return true if every element of self is also an element of other */
 bool isSubsetOf(const Set* self, const Set* other) {
+    if(isEmptySet(self)){
+        return true;
+    }
+    if(isEmptySet(other) and !isEmptySet(self)){
+        return false;
+    }
+    if(isEmptySet(self) and isEmptySet(other)){
+        return true;
+    }
+    int i;
+    for(i=0; i<self->len; i++){
+        if(!isMemberSet(other, self->elements[i])){
+            return false;
+        }
+    }
+    return true;
 }
 
 /* done for you */
@@ -169,12 +228,30 @@ bool isEmptySet(const Set* self) {
 
 /* remove all elements from self that are not also elements of other */
 void intersectFromSet(Set* self, const Set* other) {
+    int i;
+    while(i<self->len){
+        if(!isMemberSet(other, self->elements[i])) {
+            removeSet(self, self->elements[i]);
+            i++;
+        }
+    }
 }
 
 /* remove all elements from self that are also elements of other */
 void subtractFromSet(Set* self, const Set* other) {
+    int i = 0;
+    while(i<self->len){
+        if(isMemberSet(other, self->elements[i])){
+            removeSet(self, self->elements[i]);
+            i++;
+        }
+    }
 }
 
 /* add all elements of other to self (obviously, without creating duplicate elements) */
 void unionInSet(Set* self, const Set* other) {
+    int i;
+    for(i=0; i<other->len; i++){
+        insertSet(self, other->elements[i]);
+    }
 }
